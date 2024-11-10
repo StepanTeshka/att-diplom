@@ -14,58 +14,67 @@ func InitApp() {
 	db = appinit.InitBD()
 }
 
+func RouteWrapper(path string, handlerFunc http.HandlerFunc, useJwtMiddleware bool) {
+	finalHandler := handlerFunc
+
+	if useJwtMiddleware {
+		finalHandler = middleware.JwtAuthMiddleware(finalHandler)
+	}
+
+	finalHandler = middleware.CORSMiddleware(finalHandler)
+
+	http.HandleFunc(path, finalHandler)
+}
+
 func RunSite() error {
 	InitApp()
 
-	// Auth
-
-	http.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
+	// Auth routes
+	RouteWrapper("/auth", func(w http.ResponseWriter, r *http.Request) {
 		handlers.AuthHandler(w, r, db)
-	})
+	}, false)
 
-	// Engineer
-
-	http.HandleFunc("/getEngineers", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	// Engineer routes
+	RouteWrapper("/getEngineers", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetAllEngineersHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/getEngineer", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/getEngineer", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetEngineerByIDHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/addEngineer", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/addEngineer", func(w http.ResponseWriter, r *http.Request) {
 		handlers.AddEngineerHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/deleteEngineer", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/deleteEngineer", func(w http.ResponseWriter, r *http.Request) {
 		handlers.DeleteEngineerHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/updateEngineer", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/updateEngineer", func(w http.ResponseWriter, r *http.Request) {
 		handlers.UpdateEngineerHandler(w, r, db)
-	}))
+	}, true)
 
-	// Application
-
-	http.HandleFunc("/getApplications", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	// Application routes
+	RouteWrapper("/getApplications", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetApplicationsHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/getApplication", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/getApplication", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetApplicationByIDHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/addApplication", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/addApplication", func(w http.ResponseWriter, r *http.Request) {
 		handlers.AddApplicationHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/deleteApplication", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/deleteApplication", func(w http.ResponseWriter, r *http.Request) {
 		handlers.DeleteApplicationHandler(w, r, db)
-	}))
+	}, true)
 
-	http.HandleFunc("/updateApplication", middleware.JwtAuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	RouteWrapper("/updateApplication", func(w http.ResponseWriter, r *http.Request) {
 		handlers.UpdateApplicationHandler(w, r, db)
-	}))
+	}, true)
 
 	return nil
 }

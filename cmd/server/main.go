@@ -39,3 +39,10 @@ func main() {
 	}
 
 }
+
+func enableCors(w *http.ResponseWriter, origin string) {
+	(*w).Header().Set("Access-Control-Allow-Origin", origin)
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
+}

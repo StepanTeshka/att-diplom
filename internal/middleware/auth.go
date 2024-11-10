@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -12,13 +13,20 @@ var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 func JwtAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		tokenString := r.Header.Get("Authorization")
 		if tokenString == "" {
 			http.Error(w, "Отсутствует токен авторизации", http.StatusUnauthorized)
 			return
 		}
 
-		if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+		log.Println("Токен получен:", tokenString)
+
+		if strings.HasPrefix(tokenString, "Bearer ") {
 			tokenString = tokenString[7:]
 		}
 
@@ -29,11 +37,6 @@ func JwtAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		if err != nil || !token.Valid {
 			log.Println("Ошибка валидации токена:", err)
 			http.Error(w, "Неверный токен", http.StatusUnauthorized)
-			return
-		}
-
-		if _, ok := (*claims)["authorized"].(bool); !ok {
-			http.Error(w, "Доступ запрещён", http.StatusUnauthorized)
 			return
 		}
 
