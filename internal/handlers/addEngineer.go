@@ -15,7 +15,7 @@ func AddEngineerHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	var engineer types.Engineer
+	var engineer types.EngineerRequest
 	err := json.NewDecoder(r.Body).Decode(&engineer)
 	if err != nil {
 		http.Error(w, "Неверный формат данных", http.StatusBadRequest)

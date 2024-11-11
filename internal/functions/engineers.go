@@ -49,7 +49,7 @@ func GetEngineerByID(db *sql.DB, id int) (types.Engineer, error) {
 	return engineer, nil
 }
 
-func AddEngineer(db *sql.DB, engineer types.Engineer) (int, error) {
+func AddEngineer(db *sql.DB, engineer types.EngineerRequest) (int, error) {
 	var newID int
 
 	query := `

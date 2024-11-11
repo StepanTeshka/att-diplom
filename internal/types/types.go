@@ -18,6 +18,12 @@ type Engineer struct {
 	TelegramID string
 }
 
+type EngineerRequest struct {
+	Name       string `json:"name"`
+	Email      string `json:"email"`
+	TelegramID string `json:"telegramId"`
+}
+
 type Application struct {
 	ID                int
 	Description       sql.NullString
