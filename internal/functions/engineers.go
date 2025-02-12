@@ -41,7 +41,7 @@ func GetEngineerByID(db *sql.DB, id int) (types.Engineer, error) {
 		&engineer.ID, &engineer.Name, &engineer.Email, &engineer.TelegramID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return engineer, fmt.Errorf("задача с ID %d не найдена", id)
+			return engineer, fmt.Errorf("инженер с ID %d не найдена", id)
 		}
 		return engineer, fmt.Errorf("ошибка при запросе к базе данных: %v", err)
 	}

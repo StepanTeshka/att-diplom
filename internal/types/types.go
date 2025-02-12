@@ -35,3 +35,13 @@ type Application struct {
 	EndDate           sql.NullTime
 	Cabinet           sql.NullString
 }
+
+type ApplicationRequest struct {
+	Description string  `json:"description"`
+	NameTeacher string  `json:"teacher"`
+	IDEngineer  *string `json:"engineer"`
+	Status      string  `json:"status"`
+	StartDate   string  `json:"startDate"`
+	EndDate     *string `json:"endDate"`
+	Cabinet     string  `json:"cabinet"`
+}

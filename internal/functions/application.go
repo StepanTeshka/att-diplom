@@ -94,20 +94,21 @@ func AddApplication(db *sql.DB, application types.Application) (int, error) {
 	var newID int
 
 	query := `
-		INSERT INTO applications (description, nameteacher, teachertelegramid, idengineer, status, startdate, enddate, cabinet)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO applications (description, nameteacher, idengineer, status, startdate, enddate, cabinet)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING idapplication
 	`
+
 	err := db.QueryRow(query,
 		application.Description,
 		application.NameTeacher,
-		application.TeacherTelegramID,
 		application.IDEngineer,
 		application.Status,
 		application.StartDate,
 		application.EndDate,
 		application.Cabinet,
 	).Scan(&newID)
+
 	if err != nil {
 		return 0, fmt.Errorf("ошибка при добавлении задачи в базу данных: %v", err)
 	}

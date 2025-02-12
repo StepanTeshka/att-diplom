@@ -25,6 +25,16 @@ func AuthHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
+	// password := "123321"
+
+	// // Генерация bcrypt-хеша с фактором стоимости 10
+	// hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println("Хешированный пароль:", string(hash))
+
 	userID, err := functions.AuthenticateUser(db, authReq.Email, authReq.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
