@@ -14,7 +14,7 @@ func GetApplicationsWithPagination(db *sql.DB, page, pageSize int, nameTeacher s
 
 	// Основной SQL-запрос с фильтрацией
 	query := `
-		SELECT idapplication, description, nameteacher, teachertelegramid, idengineer, status, startdate, enddate, cabinet
+		SELECT idapplication, description, nameteacher, idengineer, status, startdate, enddate, cabinet
 		FROM applications
 		WHERE 1=1
 	`
@@ -71,7 +71,7 @@ func GetApplicationsWithPagination(db *sql.DB, page, pageSize int, nameTeacher s
 		var application types.Application
 		err := rows.Scan(
 			&application.ID, &application.Description, &application.NameTeacher,
-			&application.TeacherTelegramID, &application.IDEngineer, &application.Status,
+			&application.IDEngineer, &application.Status,
 			&application.StartDate, &application.EndDate, &application.Cabinet,
 		)
 		if err != nil {
@@ -94,12 +94,12 @@ func GetApplicationByID(db *sql.DB, id int) (types.Application, error) {
 	var application types.Application
 
 	query := `
-		SELECT idapplication, description, nameteacher, teachertelegramid, idengineer, status, startdate, enddate, cabinet
+		SELECT idapplication, description, nameteacher, idengineer, status, startdate, enddate, cabinet
 		FROM applications
 		WHERE idapplication = $1
 	`
 	err := db.QueryRow(query, id).Scan(
-		&application.ID, &application.Description, &application.NameTeacher, &application.TeacherTelegramID, &application.IDEngineer, &application.Status, &application.StartDate, &application.EndDate, &application.Cabinet)
+		&application.ID, &application.Description, &application.NameTeacher, &application.IDEngineer, &application.Status, &application.StartDate, &application.EndDate, &application.Cabinet)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return application, fmt.Errorf("задача с ID %d не найдена", id)

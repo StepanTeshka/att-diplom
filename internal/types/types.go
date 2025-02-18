@@ -12,28 +12,25 @@ type Bot struct {
 }
 
 type Engineer struct {
-	ID         int
-	Name       string
-	Email      string
-	TelegramID string
+	ID    int
+	Name  string
+	Email string
 }
 
 type EngineerRequest struct {
-	Name       string `json:"name"`
-	Email      string `json:"email"`
-	TelegramID string `json:"telegramId"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type Application struct {
-	ID                int
-	Description       sql.NullString
-	NameTeacher       sql.NullString
-	TeacherTelegramID sql.NullString
-	IDEngineer        sql.NullInt64
-	Status            sql.NullString
-	StartDate         time.Time
-	EndDate           sql.NullTime
-	Cabinet           sql.NullString
+	ID          int
+	Description sql.NullString
+	NameTeacher sql.NullString
+	IDEngineer  sql.NullInt64
+	Status      sql.NullString
+	StartDate   time.Time
+	EndDate     sql.NullTime
+	Cabinet     sql.NullString
 }
 type ApplicationUpdateRequest struct {
 	ID          string         `json:"id"`
