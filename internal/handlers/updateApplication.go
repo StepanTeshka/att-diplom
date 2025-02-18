@@ -7,12 +7,16 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func UpdateApplicationHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+func UpdateApplicationHandler(w http.ResponseWriter, r *http.Request, db *sql.DB, bot *tgbotapi.BotAPI) {
 	if r.Method != http.MethodPut {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
@@ -59,6 +63,42 @@ func UpdateApplicationHandler(w http.ResponseWriter, r *http.Request, db *sql.DB
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	chatIdStr := os.Getenv("TELEGRAM_CHAT_ID")
+	if chatIdStr == "" {
+		log.Println("Ошибка: TELEGRAM_CHAT_ID не установлен")
+	} else {
+		chatId, err := strconv.ParseInt(chatIdStr, 10, 64)
+		if err != nil {
+			log.Println("Ошибка преобразования chatId:", err)
+		} else {
+			engineerText := "Не назначен"
+			if application.IDEngineer.Valid && application.IDEngineer.String != "" {
+				engineerID, err := strconv.Atoi(application.IDEngineer.String)
+				if err != nil {
+					log.Println("Ошибка преобразования ID инженера:", err)
+					http.Error(w, "Некорректный ID инженера", http.StatusBadRequest)
+					return
+				}
+
+				engineer, err := functions.GetEngineerByID(db, engineerID)
+				if err == nil {
+					engineerText = engineer.Name
+				} else {
+					log.Println("Инженер не найден")
+				}
+			}
+
+			message := fmt.Sprintf("🚀 Обновлена заявка №%d\nОписание: %s\nПреподаватель: %s\nКабинет: %s\nСтатус: %s\nИнженер: %s",
+				id, application.Description.String, application.NameTeacher.String, application.Cabinet.String, application.Status.String, engineerText)
+
+			if err := functions.SendMessage(bot, chatId, message); err != nil {
+				log.Println("Ошибка отправки сообщения в Telegram:", err)
+			} else {
+				log.Println("✅ Сообщение успешно отправлено в Telegram")
+			}
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)

@@ -2,7 +2,6 @@ package app
 
 import (
 	"att-diplom/internal/appinit"
-	"att-diplom/internal/handlers"
 	"att-diplom/internal/types"
 	"context"
 	"crypto/tls"
@@ -27,6 +26,9 @@ func NewApp(ctx context.Context) (*BotWrapper, error) {
 
 	return a, nil
 }
+
+var BotTelegram *tgbotapi.BotAPI
+
 func (a *BotWrapper) RunBot() error {
 	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if botToken == "" {
@@ -39,9 +41,7 @@ func (a *BotWrapper) RunBot() error {
 		return fmt.Errorf("bot initialization error: %v", err)
 	}
 
-	http.HandleFunc("/send", func(w http.ResponseWriter, r *http.Request) {
-		handlers.SendBotHandler(w, r, bot)
-	})
+	BotTelegram = bot
 
 	return nil
 }

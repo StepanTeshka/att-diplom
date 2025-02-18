@@ -65,7 +65,7 @@ func RunSite() error {
 	}, true)
 
 	RouteWrapper("/addApplication", func(w http.ResponseWriter, r *http.Request) {
-		handlers.AddApplicationHandler(w, r, db)
+		handlers.AddApplicationHandler(w, r, db, BotTelegram)
 	}, true)
 
 	RouteWrapper("/deleteApplication", func(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +73,7 @@ func RunSite() error {
 	}, true)
 
 	RouteWrapper("/updateApplication", func(w http.ResponseWriter, r *http.Request) {
-		handlers.UpdateApplicationHandler(w, r, db)
+		handlers.UpdateApplicationHandler(w, r, db, BotTelegram)
 	}, true)
 
 	return nil
