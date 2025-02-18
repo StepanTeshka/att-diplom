@@ -40,14 +40,19 @@ func GetApplicationsHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 		}
 	}
 
-	applications, err := functions.GetApplicationsWithPagination(db, page, pageSize, nameTeacher, engineerID, orderDate, status)
+	applications, totalPages, err := functions.GetApplicationsWithPagination(db, page, pageSize, nameTeacher, engineerID, orderDate, status)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	response := map[string]interface{}{
+		"applications": applications,
+		"totalPages":   totalPages,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(applications)
+	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, "Ошибка при кодировании данных в JSON", http.StatusInternalServerError)
 		return

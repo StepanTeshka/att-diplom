@@ -24,7 +24,6 @@ func AddApplicationHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	// Парсим StartDate в time.Time
 	startDate, err := time.Parse("2006-01-02", application.StartDate)
 	if err != nil {
 		http.Error(w, "Неверный формат startDate. Используйте YYYY-MM-DD", http.StatusBadRequest)

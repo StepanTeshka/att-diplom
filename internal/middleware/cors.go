@@ -18,7 +18,6 @@ func CORSMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		if origin := r.Header.Get("Origin"); origin != "" {
-			log.Println("tets")
 			if slices.Contains(strings.Split(allowedOrigins, ","), origin) {
 				log.Println(origin)
 				w.Header().Set("Access-Control-Allow-Origin", origin)
