@@ -1,18 +1,11 @@
 package app
 
 import (
-	"att-diplom/internal/appinit"
 	"att-diplom/internal/handlers"
 	"att-diplom/internal/middleware"
 	"database/sql"
 	"net/http"
 )
-
-var db *sql.DB
-
-func InitApp() {
-	db = appinit.InitBD()
-}
 
 func RouteWrapper(path string, handlerFunc http.HandlerFunc, useJwtMiddleware bool) {
 	finalHandler := handlerFunc
@@ -26,8 +19,7 @@ func RouteWrapper(path string, handlerFunc http.HandlerFunc, useJwtMiddleware bo
 	http.HandleFunc(path, finalHandler)
 }
 
-func RunSite() error {
-	InitApp()
+func (a *BotWrapper) RunSite(db *sql.DB) error {
 
 	// Auth routes
 	RouteWrapper("/auth", func(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +57,7 @@ func RunSite() error {
 	}, true)
 
 	RouteWrapper("/addApplication", func(w http.ResponseWriter, r *http.Request) {
-		handlers.AddApplicationHandler(w, r, db, BotTelegram)
+		handlers.AddApplicationHandler(w, r, db, a.EngineerBot)
 	}, true)
 
 	RouteWrapper("/deleteApplication", func(w http.ResponseWriter, r *http.Request) {
@@ -73,8 +65,11 @@ func RunSite() error {
 	}, true)
 
 	RouteWrapper("/updateApplication", func(w http.ResponseWriter, r *http.Request) {
-		handlers.UpdateApplicationHandler(w, r, db, BotTelegram)
+		handlers.UpdateApplicationHandler(w, r, db, a.EngineerBot)
 	}, true)
+	RouteWrapper("/generatePdf",
+		handlers.GeneratePdfApplication(db),
+		true)
 
 	return nil
 }

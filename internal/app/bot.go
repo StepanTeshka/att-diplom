@@ -1,11 +1,12 @@
 package app
 
 import (
-	"att-diplom/internal/appinit"
-	"att-diplom/internal/types"
+	"att-diplom/internal/handlers"
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -13,37 +14,73 @@ import (
 )
 
 type BotWrapper struct {
-	*types.Bot
+	EngineerBot *tgbotapi.BotAPI
+	TeacherBot  *tgbotapi.BotAPI
 }
 
 func NewApp(ctx context.Context) (*BotWrapper, error) {
-	a := &BotWrapper{Bot: &types.Bot{}}
+	botToken1 := os.Getenv("TELEGRAM_BOT_TOKEN_ENGINEER")
+	botToken2 := os.Getenv("TELEGRAM_BOT_TOKEN_TEACHER")
 
-	err := appinit.InitDeps(ctx, a.Bot)
+	if botToken1 == "" || botToken2 == "" {
+		return nil, fmt.Errorf("необходимо установить TELEGRAM_BOT_TOKEN_ENGINEER и TELEGRAM_BOT_TOKEN_TEACHER")
+	}
+
+	bot1, err := initBot(botToken1)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ошибка инициализации первого бота: %v", err)
+	}
+
+	bot2, err := initBot(botToken2)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка инициализации второго бота: %v", err)
+	}
+
+	a := &BotWrapper{
+		EngineerBot: bot1,
+		TeacherBot:  bot2,
+	}
+
+	err = a.SetTeacherBotCommands()
+	if err != nil {
+		log.Printf("Ошибка установки команд для второго бота: %v", err)
 	}
 
 	return a, nil
 }
 
-var BotTelegram *tgbotapi.BotAPI
+var BotTelegramEngineer *tgbotapi.BotAPI
 
-func (a *BotWrapper) RunBot() error {
-	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
-	if botToken == "" {
-		return fmt.Errorf("необходимо установить TELEGRAM_BOT_TOKEN")
+func (a *BotWrapper) RunBots(db *sql.DB) error {
+	go a.listenUpdates(a.EngineerBot, "Первый бот", db)
+
+	go a.listenUpdates(a.TeacherBot, "Второй бот", db)
+
+	select {}
+}
+
+func (a *BotWrapper) listenUpdates(bot *tgbotapi.BotAPI, botName string, db *sql.DB) {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+
+	updates := bot.GetUpdatesChan(u)
+
+	fmt.Printf("[%s] Бот запущен\n", botName)
+
+	for update := range updates {
+		if update.Message != nil {
+			if update.Message.IsCommand() {
+				handlers.HandleCommand(bot, update.Message)
+			}
+		}
+		if update.CallbackQuery != nil {
+			handlers.HandleClick(bot, update, db)
+		}
+		if update.Message != nil && !update.Message.From.IsBot && !update.Message.IsCommand() {
+			handlers.HandleUserMessage(update.Message)
+		}
+
 	}
-
-	bot, err := initBot(botToken)
-
-	if err != nil {
-		return fmt.Errorf("bot initialization error: %v", err)
-	}
-
-	BotTelegram = bot
-
-	return nil
 }
 
 func initBot(botToken string) (*tgbotapi.BotAPI, error) {
@@ -58,4 +95,19 @@ func initBot(botToken string) (*tgbotapi.BotAPI, error) {
 
 	bot.Debug = true
 	return bot, nil
+}
+
+func (a *BotWrapper) SetTeacherBotCommands() error {
+	commands := []tgbotapi.BotCommand{
+		{Command: "start", Description: "Запуск бота"},
+		{Command: "help", Description: "Справка по командам"},
+		{Command: "info", Description: "Информация о боте"},
+	}
+
+	cmdCfg := tgbotapi.NewSetMyCommands(commands...)
+	_, err := a.TeacherBot.Request(cmdCfg)
+	if err != nil {
+		return fmt.Errorf("ошибка установки команд для второго бота: %v", err)
+	}
+	return nil
 }

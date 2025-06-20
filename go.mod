@@ -13,3 +13,5 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/joho/godotenv v1.5.1
 )
+
+require github.com/jung-kurt/gofpdf v1.16.2 // indirect

@@ -2,28 +2,40 @@ package main
 
 import (
 	"att-diplom/internal/app"
+	"att-diplom/internal/appinit"
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 )
 
+var db *sql.DB
+
 func main() {
 	ctx := context.Background()
+
+	appinit.InitDeps(ctx)
 
 	a, err := app.NewApp(ctx)
 	if err != nil {
 		log.Fatalf("failed to init app: %s", err.Error())
 	}
 
-	err = a.RunBot()
-	if err != nil {
-		log.Fatalf("failed to run appBot: %s", err.Error())
-	}
+	db = appinit.InitBD()
 
-	err = app.RunSite()
-	if err != nil {
-		log.Fatalf("failed to run appSite: %s", err.Error())
-	}
+	go func() {
+		err := a.RunBots(db)
+		if err != nil {
+			log.Fatalf("failed to run bots: %s", err.Error())
+		}
+	}()
+
+	go func() {
+		err := a.RunSite(db)
+		if err != nil {
+			log.Fatalf("failed to run site: %s", err.Error())
+		}
+	}()
 
 	// password := "12332199"
 	// hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -40,9 +52,10 @@ func main() {
 
 }
 
-func enableCors(w *http.ResponseWriter, origin string) {
-	(*w).Header().Set("Access-Control-Allow-Origin", origin)
-	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
-}
+// func enableCors(w *http.ResponseWriter, origin string) {
+// 	(*w).Header().Set("Access-Control-Allow-Origin", origin)
+// 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+// 	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+// 	(*w).Header().Set("Content-Type", "application/json; charset=utf-8")
+// 	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
+// }

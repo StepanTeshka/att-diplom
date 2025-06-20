@@ -1,13 +1,12 @@
 package appinit
 
 import (
-	"att-diplom/internal/types"
 	"context"
 
 	"github.com/joho/godotenv"
 )
 
-func InitDeps(ctx context.Context, bot *types.Bot) error {
+func InitDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		func(ctx context.Context) error { return initConfig(ctx) },
 	}
